@@ -1,0 +1,96 @@
+.layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.navbar {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 32px);
+  max-width: 1200px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  z-index: 100;
+  box-shadow: var(--shadow-md);
+}
+
+.nav-brand .brand-logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.nav-links {
+  display: flex;
+  gap: 32px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: var(--transition-fast);
+}
+
+.nav-item:hover {
+  color: var(--text-primary);
+}
+
+.sparkle-icon {
+  color: var(--accent-secondary);
+}
+
+.nav-item:hover .sparkle-icon {
+  filter: drop-shadow(0 0 8px var(--accent-secondary));
+}
+
+.logout-btn {
+  color: var(--text-muted);
+  transition: var(--transition-fast);
+}
+
+.logout-btn:hover {
+  color: var(--danger);
+}
+
+.main-content {
+  flex: 1;
+  padding-top: 100px; /* Space for fixed navbar */
+  min-height: 100vh;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .navbar {
+    top: auto;
+    bottom: 16px;
+    padding: 12px;
+  }
+  
+  .nav-links span {
+    display: none;
+  }
+  
+  .nav-links {
+    gap: 24px;
+    width: 100%;
+    justify-content: space-around;
+  }
+  
+  .nav-brand, .nav-actions {
+    display: none;
+  }
+
+  .main-content {
+    padding-top: 24px;
+    padding-bottom: 100px;
+  }
+}

@@ -1,28 +1,61 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { authService } from '../services/authService';
 
-const AuthContext = createContext();
-
-export const useAuth = () => useContext(AuthContext);
+const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check local storage for persisted user session
+    // Check initial session
     const currentUser = authService.getCurrentUser();
-    if (currentUser) {
-      setUser(currentUser);
-    }
+    setUser(currentUser);
     setLoading(false);
+
+    // Set up an interval to check token expiry periodically
+    const interval = setInterval(() => {
+      const activeUser = authService.getCurrentUser();
+      setUser((prevUser) => {
+        if (!activeUser && prevUser) {
+          // Token expired
+          return null;
+        }
+        return prevUser;
+      });
+    }, 60000); // Check every minute
+
+    return () => clearInterval(interval);
   }, []);
 
-  const login = async (email, otp) => {
+  const signup = async (email, otp, username, password) => {
     try {
-      const res = await authService.verifyOTP(email, otp);
-      setUser(res.user);
-      return { success: true };
+      const response = await authService.verifySignup(email, otp, username, password);
+      if (response.success) {
+        setUser(response.user);
+      }
+      return response;
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+
+  const loginWithPassword = async (username, password) => {
+    try {
+      const response = await authService.loginWithPassword(username, password);
+      if (response.success) {
+        setUser(response.user);
+      }
+      return response;
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+
+  const resetPassword = async (username, otp, newPassword) => {
+    try {
+      const response = await authService.resetPassword(username, otp, newPassword);
+      return response;
     } catch (error) {
       return { success: false, error: error.message };
     }
@@ -33,9 +66,15 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  if (loading) {
+    return null; // Or a loading spinner
+  }
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
-      {!loading && children}
+    <AuthContext.Provider value={{ user, signup, loginWithPassword, logout, resetPassword }}>
+      {children}
     </AuthContext.Provider>
   );
 };
+
+export const useAuth = () => useContext(AuthContext);

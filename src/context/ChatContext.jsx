@@ -1,68 +1,139 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { useAuth } from './AuthContext';
 
 const ChatContext = createContext();
 
 export const useChat = () => useContext(ChatContext);
 
+// Mock DB helpers for cross-session chat & requests
+const getGlobalChats = (username) => {
+  const data = localStorage.getItem(`dit_chats_${username}`);
+  return data ? JSON.parse(data) : {};
+};
+
+const saveGlobalChats = (username, chatsObj) => {
+  localStorage.setItem(`dit_chats_${username}`, JSON.stringify(chatsObj));
+};
+
+const getGlobalRequests = () => {
+  const data = localStorage.getItem('dit_swap_requests');
+  return data ? JSON.parse(data) : [];
+};
+
+const saveGlobalRequests = (requestsArr) => {
+  localStorage.setItem('dit_swap_requests', JSON.stringify(requestsArr));
+};
+
 export const ChatProvider = ({ children }) => {
-  const [chats, setChats] = useState(() => {
-    const savedChats = localStorage.getItem('dit_chats');
-    if (savedChats) return JSON.parse(savedChats);
-    
-    // Initial state
-    return {
-      'Rahul Sharma': [
-        { id: 1, sender: 'other', text: 'Hey! I saw you want to learn UI/UX. I can teach you Figma if you help me with React hooks.', time: '10:30 AM' },
-        { id: 2, sender: 'me', text: 'Hi Rahul! That sounds perfect.', time: '10:35 AM' }
-      ],
-      'Sneha Patel': [
-        { id: 1, sender: 'other', text: 'When are you free for a call?', time: 'Yesterday' }
-      ]
-    };
-  });
+  const { user } = useAuth();
+  const [chats, setChats] = useState({});
+  const [activeChat, setActiveChat] = useState(null);
+  
+  // Requests state
+  const [requests, setRequests] = useState([]);
 
-  const [activeChat, setActiveChat] = useState('Rahul Sharma');
-
+  // Load user data on mount/login
   useEffect(() => {
-    localStorage.setItem('dit_chats', JSON.stringify(chats));
-  }, [chats]);
+    if (user && user.username) {
+      setChats(getGlobalChats(user.username));
+      setRequests(getGlobalRequests());
+      setActiveChat(null);
+    } else {
+      setChats({});
+      setRequests([]);
+      setActiveChat(null);
+    }
+  }, [user]);
 
-  const sendMessage = (contactName, text) => {
-    const newMessage = {
+  // Handle cross-session simulated sync (Polling every 3 seconds)
+  useEffect(() => {
+    if (!user) return;
+    const interval = setInterval(() => {
+      setChats(getGlobalChats(user.username));
+      setRequests(getGlobalRequests());
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [user]);
+
+  const sendRequest = (targetUsername) => {
+    if (!user) return;
+    const newReq = {
       id: Date.now(),
-      sender: 'me',
-      text,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      from: user.username,
+      to: targetUsername,
+      status: 'pending'
     };
+    const allReqs = getGlobalRequests();
+    allReqs.push(newReq);
+    saveGlobalRequests(allReqs);
+    setRequests(allReqs);
+  };
 
-    setChats(prev => ({
-      ...prev,
-      [contactName]: [...(prev[contactName] || []), newMessage]
-    }));
+  const acceptRequest = (requestId, fromUsername) => {
+    if (!user) return;
+    
+    // Update request
+    const allReqs = getGlobalRequests().map(r => r.id === requestId ? { ...r, status: 'accepted' } : r);
+    saveGlobalRequests(allReqs);
+    setRequests(allReqs);
+    
+    // Initialize empty chat for ME
+    const myChats = getGlobalChats(user.username);
+    if (!myChats[fromUsername]) myChats[fromUsername] = [];
+    saveGlobalChats(user.username, myChats);
+    setChats(myChats);
 
-    // Simulate auto-reply after 2 seconds
-    setTimeout(() => {
-      const autoReply = {
-        id: Date.now() + 1,
-        sender: 'other',
-        text: `Got it! Also, ${text.split(' ')[0]} to you too! Let's schedule a session soon.`,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-      setChats(prev => ({
-        ...prev,
-        [contactName]: [...(prev[contactName] || []), autoReply]
-      }));
-    }, 2000);
+    // Initialize for the OTHER user in global DB
+    const otherUserChats = getGlobalChats(fromUsername);
+    if (!otherUserChats[user.username]) {
+      otherUserChats[user.username] = [];
+      saveGlobalChats(fromUsername, otherUserChats);
+    }
+  };
+
+  const rejectRequest = (requestId) => {
+    if (!user) return;
+    const allReqs = getGlobalRequests().map(r => r.id === requestId ? { ...r, status: 'rejected' } : r);
+    saveGlobalRequests(allReqs);
+    setRequests(allReqs);
+  };
+
+  const sendMessage = (contactUsername, text) => {
+    if (!user) return;
+    
+    const messageTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    // 1. Update My Local State (sender: 'me')
+    const myMsg = { id: Date.now(), sender: 'me', text, time: messageTime };
+    const myChats = getGlobalChats(user.username);
+    myChats[contactUsername] = [...(myChats[contactUsername] || []), myMsg];
+    saveGlobalChats(user.username, myChats);
+    setChats(myChats); // Update UI immediately
+
+    // 2. Update Other User's Global DB (sender: 'other')
+    const otherMsg = { id: Date.now() + 1, sender: 'other', text, time: messageTime };
+    const otherChats = getGlobalChats(contactUsername);
+    otherChats[user.username] = [...(otherChats[user.username] || []), otherMsg];
+    saveGlobalChats(contactUsername, otherChats);
   };
 
   const reportUser = (contactName, reason) => {
-    // In a real app, this sends an API request to the backend.
     console.log(`Reported ${contactName} for: ${reason}`);
     alert(`${contactName} has been reported to the Admin.`);
   };
 
   return (
-    <ChatContext.Provider value={{ chats, activeChat, setActiveChat, sendMessage, reportUser }}>
+    <ChatContext.Provider value={{ 
+      chats, 
+      activeChat, 
+      setActiveChat, 
+      sendMessage, 
+      reportUser,
+      requests,
+      sendRequest,
+      acceptRequest,
+      rejectRequest
+    }}>
       {children}
     </ChatContext.Provider>
   );

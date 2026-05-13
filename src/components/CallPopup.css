@@ -1,0 +1,72 @@
+.call-popup {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1000;
+}
+
+.call-icon-btn {
+  background: var(--accent-primary);
+  border: none;
+  border-radius: 50%;
+  padding: 12px;
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  transition: background var(--transition-fast);
+}
+
+.call-icon-btn:hover {
+  background: var(--accent-secondary);
+}
+
+.call-actions {
+  position: absolute;
+  bottom: 60px;
+  right: 0;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  animation: slideIn 0.3s ease;
+}
+
+.call-item p {
+  margin: 0 0 8px 0;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.accept-btn, .reject-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: var(--radius-full);
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.accept-btn {
+  background: var(--success);
+}
+
+.reject-btn {
+  background: var(--danger);
+}
+
+.accept-btn:hover {
+  background: var(--success-dark);
+}
+
+.reject-btn:hover {
+  background: var(--danger-dark);
+}

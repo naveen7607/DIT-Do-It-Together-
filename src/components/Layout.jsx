@@ -2,6 +2,7 @@ import { Outlet, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Home, Search, MessageSquare, User, LogOut, Sparkles, Shield } from 'lucide-react';
 import './Layout.css';
+import { CallPopup } from '../components/CallPopup';
 
 export const Layout = () => {
   const { user, logout } = useAuth();
@@ -19,7 +20,6 @@ export const Layout = () => {
           <div className="nav-brand">
             <Link to="/" className="brand-logo gradient-text">DIT</Link>
           </div>
-          
           <div className="nav-links">
             <Link to="/learning" className="nav-item">
               <Home size={20} />
@@ -48,7 +48,6 @@ export const Layout = () => {
               </Link>
             )}
           </div>
-
           <div className="nav-actions">
             <button onClick={handleLogout} className="logout-btn">
               <LogOut size={20} />
@@ -56,7 +55,8 @@ export const Layout = () => {
           </div>
         </nav>
       )}
-      
+      {/* Global Call Popup appears on all pages */}
+      <CallPopup />
       <main className="main-content">
         <Outlet />
       </main>

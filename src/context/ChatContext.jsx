@@ -36,24 +36,15 @@ const saveGlobalCooldowns = (cdArr) => {
   localStorage.setItem('dit_call_cooldowns', JSON.stringify(cdArr));
 };
 
-// Deterministic Google Meet link generator (letters only, 3‑4-3 characters)
+// Functional Jitsi Meet link generator (requires no backend auth)
 const generateMeetLink = () => {
-  const letters = 'abcdefghijklmnopqrstuvwxyz';
-  const seg3 = () => {
-    let s = '';
-    for (let i = 0; i < 3; i++) {
-      s += letters[Math.floor(Math.random() * letters.length)];
-    }
-    return s;
-  };
-  const seg4 = () => {
-    let s = '';
-    for (let i = 0; i < 4; i++) {
-      s += letters[Math.floor(Math.random() * letters.length)];
-    }
-    return s;
-  };
-  return `https://meet.google.com/${seg3()}-${seg4()}-${seg3()}`;
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let randomStr = '';
+  for (let i = 0; i < 12; i++) {
+    randomStr += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  // Jitsi allows instant, free video rooms by navigating to a unique URL.
+  return `https://meet.jit.si/DIT-Call-${randomStr}`;
 };
 
 export const ChatProvider = ({ children }) => {

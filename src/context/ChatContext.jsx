@@ -156,9 +156,9 @@ export const ChatProvider = ({ children }) => {
     const all = getGlobalCalls().map(c => c.id === callId ? { ...c, status: 'accepted', meetLink } : c);
     saveGlobalCalls(all);
     setCalls(all);
-    // Set cooldown for this pair (5 minutes)
+    // Set cooldown for this pair (2 minutes)
     const pairKey = [user.username, fromUsername].sort().join('-');
-    const newCooldown = { pair: pairKey, nextAllowed: Date.now() + 5 * 60 * 1000 };
+    const newCooldown = { pair: pairKey, nextAllowed: Date.now() + 2 * 60 * 1000 };
     const cdArr = getGlobalCooldowns().filter(c => c.pair !== pairKey);
     cdArr.push(newCooldown);
     saveGlobalCooldowns(cdArr);

@@ -1,12 +1,16 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { authService } from '../services/authService';
 import { Mail, KeyRound, ArrowRight, Loader2, User as UserIcon, Lock } from 'lucide-react';
 import './Login.css';
 
 export const Login = () => {
-  const [mode, setMode] = useState('LOGIN'); // LOGIN, SIGNUP, FORGOT_PASSWORD
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const initialMode = queryParams.get('mode') === 'signup' ? 'SIGNUP' : 'LOGIN';
+  
+  const [mode, setMode] = useState(initialMode); // LOGIN, SIGNUP, FORGOT_PASSWORD
   const [step, setStep] = useState('FORM'); // FORM or OTP (for signup and forgot_password)
   
   // Form State

@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Camera, Edit2, Save, MapPin, Globe, Book, Code, Link as LinkIcon, Briefcase } from 'lucide-react';
 import './Profile.css';
 
 export const Profile = () => {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState({
     name: user?.name || '',
@@ -18,12 +18,36 @@ export const Profile = () => {
     portfolio: 'https://myportfolio.com'
   });
 
+  useEffect(() => {
+    if (user) {
+      setProfileData(prev => ({
+        ...prev,
+        name: user.name || prev.name,
+        bio: user.bio || prev.bio,
+        location: user.location || prev.location,
+        language: user.language || prev.language,
+        teaching: user.skillsTeaching?.join(', ') || prev.teaching,
+        learning: user.skillsLearning?.join(', ') || prev.learning,
+        experience: user.experience || prev.experience,
+        github: user.github || prev.github,
+        portfolio: user.portfolio || prev.portfolio
+      }));
+    }
+  }, [user]);
+
   const handleChange = (e) => {
     setProfileData({ ...profileData, [e.target.name]: e.target.value });
   };
 
-  const handleSave = () => {
-    // Mock save to local storage/backend
+  const handleSave = async () => {
+    // Parse skills into arrays
+    const parsedData = {
+      ...profileData,
+      skillsTeaching: profileData.teaching.split(',').map(s => s.trim()).filter(s => s),
+      skillsLearning: profileData.learning.split(',').map(s => s.trim()).filter(s => s)
+    };
+    
+    await updateUser(parsedData);
     setIsEditing(false);
   };
 

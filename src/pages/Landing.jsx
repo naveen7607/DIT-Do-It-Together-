@@ -12,7 +12,7 @@ export const Landing = () => {
         </div>
         <div className="nav-actions">
           <Link to="/login" className="btn-secondary">Login</Link>
-          <Link to="/login" className="btn-primary">Get Started</Link>
+          <Link to="/login?mode=signup" className="btn-primary">Get Started</Link>
         </div>
       </nav>
 
@@ -35,7 +35,7 @@ export const Landing = () => {
           </p>
           
           <div className="hero-cta animate-fade-up" style={{ animationDelay: '0.4s' }}>
-            <Link to="/login" className="btn-primary btn-large">
+            <Link to="/login?mode=signup" className="btn-primary btn-large">
               Start Swapping Skills <ArrowRight size={20} />
             </Link>
           </div>

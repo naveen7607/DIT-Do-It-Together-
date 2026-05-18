@@ -195,5 +195,35 @@ export const authService = {
 
   logout: () => {
     localStorage.removeItem('dit_session');
+  },
+
+  updateProfile: async (username, profileData) => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const users = getDb();
+        const userIndex = users.findIndex(u => u.username === username);
+        
+        if (userIndex !== -1) {
+          // Update DB
+          users[userIndex] = { ...users[userIndex], ...profileData };
+          saveDb(users);
+
+          // Update current session if it's the active user
+          const sessionStr = localStorage.getItem('dit_session');
+          if (sessionStr) {
+            let sessionUser = JSON.parse(sessionStr);
+            if (sessionUser.username === username) {
+              sessionUser = { ...sessionUser, ...profileData };
+              localStorage.setItem('dit_session', JSON.stringify(sessionUser));
+              resolve({ success: true, user: sessionUser });
+              return;
+            }
+          }
+          resolve({ success: true, user: users[userIndex] });
+        } else {
+          resolve({ success: false, error: 'User not found' });
+        }
+      }, 500);
+    });
   }
 };

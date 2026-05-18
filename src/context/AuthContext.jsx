@@ -70,8 +70,21 @@ export const AuthProvider = ({ children }) => {
     return null; // Or a loading spinner
   }
 
+  const updateUser = async (profileData) => {
+    if (!user) return { success: false, error: 'No active user' };
+    try {
+      const response = await authService.updateProfile(user.username, profileData);
+      if (response.success) {
+        setUser(response.user);
+      }
+      return response;
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, signup, loginWithPassword, logout, resetPassword }}>
+    <AuthContext.Provider value={{ user, signup, loginWithPassword, logout, resetPassword, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

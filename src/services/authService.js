@@ -1,9 +1,88 @@
 import emailjs from '@emailjs/browser';
 
+// Seed users for a realistic presentation environment
+const initialUsers = [
+  {
+    id: 'u_seed1',
+    personalEmail: 'rahul.sharma@gmail.com',
+    username: 'rahul@dit.com',
+    password: 'password123',
+    name: 'Rahul Sharma',
+    skillsTeaching: ['React', 'Node.js', 'JavaScript'],
+    skillsLearning: ['Photoshop', 'UI/UX Design'],
+    bio: 'Full stack developer who wants to learn creative designing and UI design patterns.',
+    rating: 4.8,
+    role: 'user'
+  },
+  {
+    id: 'u_seed2',
+    personalEmail: 'sneha.reddy@gmail.com',
+    username: 'sneha@dit.com',
+    password: 'password123',
+    name: 'Sneha Reddy',
+    skillsTeaching: ['UI/UX Design', 'Figma', 'Graphic Design'],
+    skillsLearning: ['React', 'HTML/CSS'],
+    bio: 'Product Designer looking to bridge the gap with frontend development.',
+    rating: 4.9,
+    role: 'user'
+  },
+  {
+    id: 'u_seed3',
+    personalEmail: 'amit.patel@gmail.com',
+    username: 'amit@dit.com',
+    password: 'password123',
+    name: 'Amit Patel',
+    skillsTeaching: ['Python', 'Data Science', 'Django'],
+    skillsLearning: ['JavaScript', 'React'],
+    bio: 'Data engineer wanting to learn modern web development frameworks.',
+    rating: 4.5,
+    role: 'user'
+  },
+  {
+    id: 'u_seed4',
+    personalEmail: 'priya.sen@gmail.com',
+    username: 'priya@dit.com',
+    password: 'password123',
+    name: 'Priya Sen',
+    skillsTeaching: ['Photoshop', 'Illustrator', 'Video Editing'],
+    skillsLearning: ['UI/UX Design', 'Figma'],
+    bio: 'Creative visual designer expanding into interactive design products.',
+    rating: 4.7,
+    role: 'user'
+  }
+];
+
 // Mocked DB helpers
 const getDb = () => {
   const db = localStorage.getItem('dit_users_db');
-  return db ? JSON.parse(db) : [];
+  if (!db) {
+    localStorage.setItem('dit_users_db', JSON.stringify(initialUsers));
+    return initialUsers;
+  }
+  
+  try {
+    let parsed = JSON.parse(db);
+    let updated = false;
+    
+    // Automatically migrate legacy flat 5.0 ratings to realistic decimals
+    parsed = parsed.map((u, index) => {
+      if (!u.rating || u.rating === 5.0) {
+        // Deterministic but varied ratings between 4.5 and 4.9 so they look highly realistic
+        const newRating = parseFloat((4.5 + ((index * 0.13) % 0.4)).toFixed(1));
+        updated = true;
+        return { ...u, rating: newRating };
+      }
+      return u;
+    });
+    
+    if (updated) {
+      localStorage.setItem('dit_users_db', JSON.stringify(parsed));
+    }
+    return parsed;
+  } catch (e) {
+    localStorage.setItem('dit_users_db', JSON.stringify(initialUsers));
+    return initialUsers;
+  }
 };
 
 const saveDb = (users) => {
@@ -72,7 +151,7 @@ export const authService = {
             skillsTeaching: [],
             skillsLearning: [],
             bio: 'Hi, I am new to DIT!',
-            rating: 5.0,
+            rating: parseFloat((4.5 + Math.random() * 0.4).toFixed(1)),
             role: ditUsername.includes('admin') ? 'admin' : 'user'
           };
 

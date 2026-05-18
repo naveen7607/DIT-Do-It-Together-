@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { authService } from '../services/authService';
-import { Mail, KeyRound, ArrowRight, Loader2, User as UserIcon, Lock } from 'lucide-react';
+import { Mail, KeyRound, ArrowRight, Loader2, User as UserIcon, Lock, Eye, EyeOff } from 'lucide-react';
 import './Login.css';
 
 export const Login = () => {
@@ -12,6 +12,7 @@ export const Login = () => {
   
   const [mode, setMode] = useState(initialMode); // LOGIN, SIGNUP, FORGOT_PASSWORD
   const [step, setStep] = useState('FORM'); // FORM or OTP (for signup and forgot_password)
+  const [showPassword, setShowPassword] = useState(false);
   
   // Form State
   const [email, setEmail] = useState(''); // personalEmail for signup
@@ -186,15 +187,23 @@ export const Login = () => {
               />
             </div>
             
-            <div className="input-group">
+            <div className="input-group password-group">
               <Lock className="input-icon" size={20} />
               <input
-                type="password"
-                className="input-field with-icon"
+                type={showPassword ? "text" : "password"}
+                className="input-field with-icon password-input"
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
+              <button 
+                type="button" 
+                className="toggle-password-btn" 
+                onClick={() => setShowPassword(!showPassword)}
+                tabIndex="-1"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
 
             <button type="submit" className="btn-primary w-full mt-4" disabled={loading}>
@@ -236,15 +245,23 @@ export const Login = () => {
               <span className="domain-suffix">@dit.com</span>
             </div>
 
-            <div className="input-group">
+            <div className="input-group password-group">
               <Lock className="input-icon" size={20} />
               <input
-                type="password"
-                className="input-field with-icon"
+                type={showPassword ? "text" : "password"}
+                className="input-field with-icon password-input"
                 placeholder="Create Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
+              <button 
+                type="button" 
+                className="toggle-password-btn" 
+                onClick={() => setShowPassword(!showPassword)}
+                tabIndex="-1"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
 
             <button type="submit" className="btn-primary w-full mt-4" disabled={loading}>
@@ -325,15 +342,23 @@ export const Login = () => {
               />
             </div>
 
-            <div className="input-group">
+            <div className="input-group password-group">
               <Lock className="input-icon" size={20} />
               <input
-                type="password"
-                className="input-field with-icon"
+                type={showPassword ? "text" : "password"}
+                className="input-field with-icon password-input"
                 placeholder="Enter New Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
+              <button 
+                type="button" 
+                className="toggle-password-btn" 
+                onClick={() => setShowPassword(!showPassword)}
+                tabIndex="-1"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
 
             <button type="submit" className="btn-primary w-full mt-4" disabled={loading}>

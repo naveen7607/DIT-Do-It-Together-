@@ -50,6 +50,34 @@
   padding-left: 48px;
 }
 
+.password-group {
+  position: relative;
+}
+
+.password-input {
+  padding-right: 48px;
+}
+
+.toggle-password-btn {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  transition: color 0.2s ease;
+}
+
+.toggle-password-btn:hover {
+  color: var(--text-primary);
+}
+
 .w-full {
   width: 100%;
 }

@@ -49,6 +49,18 @@ const initialUsers = [
     bio: 'Creative visual designer expanding into interactive design products.',
     rating: 4.7,
     role: 'user'
+  },
+  {
+    id: 'u_seed_admin',
+    personalEmail: 'admin@gmail.com',
+    username: 'admin@dit.com',
+    password: 'password123',
+    name: 'Platform Admin',
+    skillsTeaching: ['Safety', 'Moderation'],
+    skillsLearning: [],
+    bio: 'Platform Administrator for DIT.',
+    rating: 5.0,
+    role: 'admin'
   }
 ];
 
@@ -66,7 +78,7 @@ const getDb = () => {
     
     // Automatically migrate legacy flat 5.0 ratings to realistic decimals
     parsed = parsed.map((u, index) => {
-      if (!u.rating || u.rating === 5.0) {
+      if ((!u.rating || u.rating === 5.0) && u.role !== 'admin') {
         // Deterministic but varied ratings between 4.5 and 4.9 so they look highly realistic
         const newRating = parseFloat((4.5 + ((index * 0.13) % 0.4)).toFixed(1));
         updated = true;
@@ -74,6 +86,15 @@ const getDb = () => {
       }
       return u;
     });
+
+    // Make sure our default admin@dit.com is always injected
+    if (!parsed.some(u => u.username === 'admin@dit.com')) {
+      const adminUser = initialUsers.find(u => u.username === 'admin@dit.com');
+      if (adminUser) {
+        parsed.push(adminUser);
+        updated = true;
+      }
+    }
     
     if (updated) {
       localStorage.setItem('dit_users_db', JSON.stringify(parsed));
@@ -258,7 +279,7 @@ export const authService = {
     });
   },
 
-  // Get current session user, verifying token expiry
+  // Get current session user, verifying token expiry and live database status (banned/warned)
   getCurrentUser: () => {
     const sessionStr = localStorage.getItem('dit_session');
     if (sessionStr) {
@@ -267,7 +288,17 @@ export const authService = {
         localStorage.removeItem('dit_session'); // Token expired
         return null;
       }
-      return sessionUser;
+      
+      // Live database validation
+      const users = getDb();
+      const liveUser = users.find(u => u.username === sessionUser.username);
+      if (!liveUser) {
+        localStorage.removeItem('dit_session'); // User banned/deleted by admin
+        return null;
+      }
+      
+      // Return merged session with updated live flags
+      return { ...sessionUser, ...liveUser };
     }
     return null;
   },

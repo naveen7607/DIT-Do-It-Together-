@@ -202,9 +202,25 @@ export const ChatProvider = ({ children }) => {
     saveGlobalChats(contactUsername, otherChats);
   };
 
-  const reportUser = (contactName, reason) => {
-    console.log(`Reported ${contactName} for: ${reason}`);
-    alert(`${contactName} has been reported to the Admin.`);
+  const reportUser = (contactName, reason = 'Suspicious behavior') => {
+    const customReason = prompt(`Please enter the reason for reporting @${contactName.split('@')[0]}:`, reason);
+    if (customReason === null) return; // Cancelled
+    
+    const finalReason = customReason.trim() || reason;
+    
+    const reports = JSON.parse(localStorage.getItem('dit_reports') || '[]');
+    const newReport = {
+      id: `r_${Date.now()}`,
+      user: contactName,
+      reason: finalReason,
+      reportedBy: user.username,
+      status: 'pending',
+      time: new Date().toLocaleString()
+    };
+    
+    reports.push(newReport);
+    localStorage.setItem('dit_reports', JSON.stringify(reports));
+    alert(`Thank you. @${contactName.split('@')[0]} has been reported to the Administrator.`);
   };
 
   return (

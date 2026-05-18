@@ -13,17 +13,21 @@ export const AuthProvider = ({ children }) => {
     setUser(currentUser);
     setLoading(false);
 
-    // Set up an interval to check token expiry periodically
+    // Set up an interval to check token expiry and admin updates (ban/warn) periodically
     const interval = setInterval(() => {
       const activeUser = authService.getCurrentUser();
       setUser((prevUser) => {
         if (!activeUser && prevUser) {
-          // Token expired
+          // Token expired or user banned by admin
           return null;
+        }
+        // If live user state has changed (e.g. warned status updated), sync state instantly
+        if (activeUser && JSON.stringify(activeUser) !== JSON.stringify(prevUser)) {
+          return activeUser;
         }
         return prevUser;
       });
-    }, 60000); // Check every minute
+    }, 3000); // Check every 3 seconds for snappy real-time demonstration
 
     return () => clearInterval(interval);
   }, []);
